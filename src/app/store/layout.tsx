@@ -6,6 +6,7 @@ type BreadcrumbItem = {
   routeSegment: string;
   label: string;
   route?: string;
+  href?: string;
 };
 
 const BREADCRUMB_ITEMS: BreadcrumbItem[] = [
@@ -14,12 +15,17 @@ const BREADCRUMB_ITEMS: BreadcrumbItem[] = [
     label: "Выбор квартиры",
   },
   {
-    routeSegment: "houses",
+    routeSegment: "complex",
     label: "Выбор дома",
   },
   {
-    routeSegment: "discovery",
-    label: "Выбор квартиры по параметрам",
+    routeSegment: "apartments",
+    // can use query params instead of hardcoding this
+    label: "3-к квартира 61 м², Секция 1",
+  },
+  {
+    routeSegment: "houses",
+    label: "Выбор квартиры на плане",
   },
 ];
 
@@ -34,12 +40,13 @@ export default function Layout({
     {
       routeSegment: "apartments",
       label: "Главная",
-      route: "menu",
+      route: "store",
+      href: "/store/menu",
     },
   ];
 
   let currentRoute = "";
-  segments.forEach((segment, index) => {
+  segments.forEach((segment) => {
     currentRoute += `/${segment}`;
     const item = BREADCRUMB_ITEMS.find(
       ({ routeSegment }) => routeSegment === segment,
@@ -55,15 +62,15 @@ export default function Layout({
   const lastIndex = breadcrumbs.length - 1;
 
   return (
-    <div className="bg-light-grey px-4 md:px-16 py-8 min-h-screen">
-      <div className="breadcrumbs py-4 text-sm md:text-base">
-        {breadcrumbs.map(({ routeSegment, label, route }, index) => {
+    <div className="bg-light-grey min-h-screen">
+      <div className="text-sm md:text-base px-4 md:px-16 pt-16">
+        {breadcrumbs.map(({ label, route, href }, index) => {
           const isLast = index === lastIndex;
           return (
-            <span key={routeSegment} className="inline-flex items-center">
+            <div key={index} className="inline-flex items-center">
               {route && !isLast ? (
                 <Link
-                  href={route}
+                  href={href ?? route}
                   className="text-slate-800 hover:text-black transition-colors duration-200"
                 >
                   {label}
@@ -72,7 +79,7 @@ export default function Layout({
                 <span className="text-gray-500">{label}</span>
               )}
               {!isLast && <span className="mx-2 text-gray-400"> — </span>}
-            </span>
+            </div>
           );
         })}
       </div>
