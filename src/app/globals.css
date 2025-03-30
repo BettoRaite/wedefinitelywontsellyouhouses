@@ -37,6 +37,8 @@
     --color-semilight-grey: #ececec;
     --color-light-grey: #f5f5f5;
     --color-white: #ffffff;
+    --color-medium-grey: #565656;
+    --color-some-grey: #afafaf;
 }
 
 @media (prefers-color-scheme: dark) {
