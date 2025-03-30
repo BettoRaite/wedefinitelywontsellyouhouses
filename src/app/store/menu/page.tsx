@@ -35,7 +35,7 @@ export default function ApartmentsStart() {
             className="w-full h-full brightness-50 hover:brightness-70 cursor-pointer transition-all duration-300"
           />
           <p className="uppercase absolute text-2xl text-white font-bold nunito-sans">
-            на ГЕНплане
+            на Генплане
           </p>
         </Link>
       </div>
