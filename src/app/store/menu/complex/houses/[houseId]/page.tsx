@@ -9,10 +9,15 @@ import { Apartment, Floor, ImageMappingApartment } from "@/lib/types";
 import BackButton from "@/components/ui/BackButton";
 import Slider from "@/components/Slider";
 import { generateRandomColor } from "@/lib/utils/genRandColor";
-import { getPolygonCenter, getRectCenter } from "@/lib/utils/math";
+import {
+  getPolygonCenter,
+  getRectCenter,
+  normalizeImageMapping,
+} from "@/lib/utils/math";
 import { FaLock } from "react-icons/fa";
 import Link from "next/link";
-export default function HousesPage() {
+
+export default function HousePage() {
   const { houseId } = useParams();
   const searchParams = useSearchParams();
   const queryFloorNumber = Number(searchParams.get("floorNumber"));
@@ -21,7 +26,6 @@ export default function HousesPage() {
     type: "house",
     id: houseId as unknown as number,
   });
-
   const {
     status: apartmentsStatus,
     data: apartmentsData,
@@ -30,14 +34,9 @@ export default function HousesPage() {
     type: "apartments",
     params: `?floorNumber=${floorNumber}&liter=a`,
   });
-
   // in order for image ref element to have the correct width/height it needs to fully load
   const [hasImageLoaded, setHasImageLoaded] = useState(false);
   const imageRef = useRef<HTMLImageElement | undefined | null>(null);
-
-  const floor = houseData?.floors.find(
-    (f: Floor) => f.floorNumber === floorNumber,
-  );
 
   useEffect(() => {
     setHasImageLoaded(false);
@@ -65,19 +64,7 @@ export default function HousesPage() {
       const areas = apartmentsData
         .filter((i) => i.imageMapping)
         .map((i) => {
-          const {
-            sourceImageHeight = 0,
-            sourceImageWidth = 0,
-            coordinates = [],
-            shapeType,
-            color,
-          } = i.imageMapping as ImageMappingApartment;
-          const normalizedCoords = coordinates.map((coord, i) => {
-            if (i % 2 === 0) {
-              return (coord / sourceImageWidth) * floorPlan.clientWidth;
-            }
-            return (coord / sourceImageHeight) * floorPlan.clientHeight;
-          });
+          const { shapeType, color } = i.imageMapping as ImageMappingApartment;
 
           return {
             id: String(i.id),
@@ -87,7 +74,10 @@ export default function HousesPage() {
             apartment: i,
             strokeColor: "rgba(0,0,0,0)",
             preFillColor: color ?? generateRandomColor(0.5),
-            coords: normalizedCoords,
+            coords: normalizeImageMapping(
+              i.imageMapping as ImageMappingApartment,
+              floorPlan,
+            ),
             active: false,
             href: `complex/houses/${i.id}?floorNumber=${floorNumber}`,
           } as MapArea;
@@ -125,6 +115,10 @@ export default function HousesPage() {
   if (houseStatus === "error" || apartmentsStatus === "error") {
     return <div className="text-red-500">Error loading data</div>;
   }
+
+  const floor = houseData?.floors.find(
+    (f: Floor) => f.floorNumber === floorNumber,
+  );
 
   if (!floor && houseStatus === "success") {
     return <div>Floor not found</div>;
@@ -165,6 +159,12 @@ export default function HousesPage() {
             </div>
           ) : (
             <div className="w-full relative">
+              {!hasImageLoaded && (
+                <div className="h-full flex justify-center items-center">
+                  <Spinner position="default" />
+                </div>
+              )}
+              {/* The image */}
               <ImageMapper
                 ref={(r) => {
                   imageRef.current = r?.getRefs().imgRef;
@@ -176,7 +176,6 @@ export default function HousesPage() {
               />
 
               {/* Apartment labels */}
-              {/* I KNOW IT NEEDS TO BE EXTRACTED INTO ITS OWN COMPONENT )))))*/}
               {areas.map((area) => {
                 const { id, coords, shape, apartment } = area as MapArea & {
                   apartment: Apartment;
@@ -224,6 +223,7 @@ export default function HousesPage() {
               })}
             </div>
           )}
+
           <Slider
             isReverse
             minValue={minFloor}
