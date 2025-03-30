@@ -7,19 +7,18 @@ import ImageMapper, { MapArea } from "react-img-mapper";
 import { MouseTooltipWrapper } from "@/components/MouseTooltipWrapper";
 import { normalizeImageMapping } from "@/lib/utils/math";
 
-export default function HousesPage() {
-  // supposedly we sort in some way to get one condo complex
+export default function ComplexPage() {
+  // supposedly we sort in some way to get one complex
   const { data, status } = useComplexQuery({
     type: "complexes",
     params: "?sort=yearBuilt",
   });
-
-  const [hasImageLoaded, setHasImageLoaded] = useState(false);
   const imageRef = useRef<HTMLImageElement | undefined | null>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
   const [tooltipState, setTooltipState] = useState<
     ({ floor?: Floor; house?: House } & { isHovered?: boolean }) | null
   >(null);
+  const [hasImageLoaded, setHasImageLoaded] = useState(false);
 
   useEffect(() => {
     setHasImageLoaded(false);
@@ -75,14 +74,11 @@ export default function HousesPage() {
     return [];
   }, [status, data, hasImageLoaded]);
 
-  if (status === "pending") {
-    return <Spinner />;
-  }
   if (status === "error") {
     return "ops...";
   }
 
-  const [complex] = data as Complex[];
+  const complex = data?.at(0);
 
   let tooltip: ReactNode | null = null;
   if (tooltipState) {
@@ -95,7 +91,7 @@ export default function HousesPage() {
         <p className="text-white w-50">
           {Number.isFinite(floor)
             ? `${floor} Этаж`
-            : "It's too expensive bro. We do not sell it."}{" "}
+            : "It's too expensive bro. We do not sell it."}
         </p>
       </div>
     );
@@ -108,32 +104,40 @@ export default function HousesPage() {
           Выбор дома
         </h1>
         <MouseTooltipWrapper ref={tooltipRef} element={tooltip}>
-          <div className="relative">
-            <ImageMapper
-              ref={(r) => {
-                imageRef.current = r?.getRefs().imgRef;
-              }}
-              src={complex.complexImageUrl}
-              name={complex.name}
-              areas={areas}
-              onLoad={() => setHasImageLoaded(true)}
-              onMouseEnter={(area) => {
-                if (imageRef.current) imageRef.current.style.cursor = "pointer";
-                const { house, floor } = area as MapArea & {
-                  house?: House;
-                  floor?: Floor;
-                };
-                if (house)
-                  setTooltipState({
-                    floor: floor,
-                    house: house,
-                  });
-              }}
-              onMouseLeave={() => {
-                if (imageRef.current) imageRef.current.style.cursor = "default";
-                setTooltipState(null);
-              }}
-            />
+          <div className="relative min-h-dvh">
+            {!hasImageLoaded && <Spinner className="absolute" />}
+
+            {complex ? (
+              <ImageMapper
+                ref={(r) => {
+                  imageRef.current = r?.getRefs().imgRef;
+                }}
+                src={complex.complexImageUrl}
+                name={complex.name}
+                areas={areas}
+                onLoad={() => setHasImageLoaded(true)}
+                onMouseEnter={(area) => {
+                  if (imageRef.current)
+                    imageRef.current.style.cursor = "pointer";
+                  const { house, floor } = area as MapArea & {
+                    house?: House;
+                    floor?: Floor;
+                  };
+                  if (house)
+                    setTooltipState({
+                      floor: floor,
+                      house: house,
+                    });
+                }}
+                onMouseLeave={() => {
+                  if (imageRef.current)
+                    imageRef.current.style.cursor = "default";
+                  setTooltipState(null);
+                }}
+              />
+            ) : (
+              <Spinner />
+            )}
           </div>
         </MouseTooltipWrapper>
       </section>
