@@ -8,10 +8,10 @@ import { MouseTooltipWrapper } from "@/components/MouseTooltipWrapper";
 import { normalizeImageMapping } from "@/lib/utils/math";
 
 export default function ComplexPage() {
-  // supposedly we sort in some way to get one complex
   const { data, status } = useComplexQuery({
     type: "complexes",
-    params: "?sort=yearBuilt",
+    // supposedly we sort in some way to get one complex
+    params: "?sort=yearBuilt&status=active",
   });
   const imageRef = useRef<HTMLImageElement | undefined | null>(null);
   const tooltipRef = useRef<HTMLDivElement | null>(null);
@@ -24,6 +24,8 @@ export default function ComplexPage() {
     setHasImageLoaded(false);
   }, [data]);
 
+  // using memo, to cache an expensive calculation
+  // like if tooltip state updates, we won't recalc.
   const areas = useMemo(() => {
     const image = imageRef.current;
 

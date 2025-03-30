@@ -78,7 +78,6 @@ export default function HousesPage() {
             }
             return (coord / sourceImageHeight) * floorPlan.clientHeight;
           });
-          console.log(floorNumber, coordinates, normalizedCoords);
 
           return {
             id: String(i.id),
