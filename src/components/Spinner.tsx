@@ -1,7 +1,10 @@
+import { twMerge } from "tailwind-merge";
 type Props = {
   position?: "center" | "default";
+  className?: string;
 };
-function Spinner({ position = "center" }: Props) {
+
+function Spinner({ position = "center", className = "" }: Props) {
   let containerClass = "";
   switch (position) {
     case "center": {
@@ -10,7 +13,7 @@ function Spinner({ position = "center" }: Props) {
     }
   }
   return (
-    <div className={containerClass} role="status">
+    <div className={twMerge(containerClass, className)} role="status">
       <svg
         aria-hidden="true"
         className="w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-gold"
